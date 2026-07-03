@@ -4,12 +4,15 @@ import dotenv from "dotenv";
 import path from "path";
 
 import mahasiswaRoutes from "./routes/mahasiswa.route";
+import authRoutes from "./routes/auth.route";
 import prodiRoutes from "./routes/prodi.route";
 
 dotenv.config();
 
 const app = express();
 
+// Pendaftaran API Routes (Diletakkan di bawah setelah const app = express())
+app.use("/api/auth", authRoutes);
 // Konfigurasi CORS agar frontend Next.js (port 3001) bisa mengakses backend
 app.use(cors({
   origin: "http://localhost:3000", // Ubah ke 3000 sesuai port jalannya Next.js kamu
