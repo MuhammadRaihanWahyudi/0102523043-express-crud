@@ -1,29 +1,28 @@
 import { Router } from "express";
-import {
-  getAllMahasiswa,
-  createMahasiswa,
-  updateMahasiswa,
-  deleteMahasiswa,
+import { authMiddleware } from "../middlewares/auth.middleware";
+import { allowRoles } from "../middlewares/role.middleware";
+
+// Memanggil fungsi controller dan upload middleware yang dibutuhkan
+import { 
+  getAllMahasiswa, 
+  createMahasiswa, 
+  updateMahasiswa, 
+  deleteMahasiswa 
 } from "../controllers/mahasiswa.controller";
 import { uploadFotoMahasiswa } from "../middlewares/upload.middleware";
-import { authMiddleware } from "../middlewares/auth.middleware";
-// ... import controller mahasiswa kamu yang sudah ada
 
 const router = Router();
 
-// Route untuk mengambil data mahasiswa (termasuk search, filter, pagination)
-router.get("/", getAllMahasiswa);
+// Semua role bisa melihat data mahasiswa (Admin, Operator, Viewer)
+router.get("/", authMiddleware, allowRoles("admin", "operator", "viewer"), getAllMahasiswa);
 
-// Tambahkan authMiddleware di parameter tengah sebelum nama fungsi controller
-router.get("/", authMiddleware, getAllMahasiswa);
+// Hanya admin dan operator yang bisa menambah data
+router.post("/", authMiddleware, allowRoles("admin", "operator"), uploadFotoMahasiswa.single("foto"), createMahasiswa);
 
-// Route tambah mahasiswa dengan middleware single upload untuk field bernama "foto"
-router.post("/", uploadFotoMahasiswa.single("foto"), createMahasiswa);
+// Hanya admin dan operator yang bisa mengubah data
+router.put("/:id", authMiddleware, allowRoles("admin", "operator"), uploadFotoMahasiswa.single("foto"), updateMahasiswa);
 
-// Route ubah mahasiswa dengan middleware single upload untuk field bernama "foto"
-router.put("/:id", uploadFotoMahasiswa.single("foto"), updateMahasiswa);
-
-// Route hapus mahasiswa
-router.delete("/:id", deleteMahasiswa);
+// Hanya admin yang bisa menghapus data
+router.delete("/:id", authMiddleware, allowRoles("admin"), deleteMahasiswa);
 
 export default router;
